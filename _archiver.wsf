@@ -1,0 +1,64 @@
+<job id="cf_cc">
+<script language="JavaScript">
+	//作成するファイルのフォーマット。
+	//[$date]には、YYYYMMDDにて日付が入ります。
+	//[$time]には、hhmissにて時刻が入ります。
+	//[$name]には、引数で指定されたファイル名が入ります。
+	var strFolderNameFormat = '[$date] [$name]';
+	
+	//本スクリプトファイルと同様の場所(もしくはショートカット設定項目の"作業フォルダ")に出力したい場合は空のままにする。
+	var strPathCreateFolder = '';
+	
+	//ファイル名として不正な記号（＼/:*?"<>|）が指定された場合に置き換える文字
+	var REPLACE_NG_CHAR = '-';
+	
+	//ファイル名が指定されなかった場合の文字列
+	var REPLACE_NO_TITLE = '';
+	
+	//-----------------------------------------------
+	// メッセージ 
+	var msg = new Array(10);
+	msg[0]='ファイルが既に存在しています。＼n既存のフォルダを開きます。＼n＼nファイル名[[$file_name]]';
+	msg[1]='テキストエディタのオープンに失敗しました。＼n＼nファイル名[[$editor_name]]';
+	msg[2]='引数の指定が不正です。デフォルトのフォルダ名で開きます。';
+	msg[3]='指定されたフォルダが存在しません。＼n指定した出力先を確認ください。＼n[[$folder_name]]＼n＼nデフォルトのフォルダ（スクリプトファイルと同様の場所）に出力します。';
+	msg[4]='フォルダ名を入力してください。';
+	msg[5]='';
+	msg[6]='';
+	msg[7]='';
+	msg[8]='';
+	msg[9]='';
+	
+	
+	//--------------------------------------------------
+	// メイン処理
+	var fso = new ActiveXObject('Scripting.FileSystemObject'); 
+	var i;
+	var objParm;
+	var aFile;
+	var objWShell = new ActiveXObject('WScript.Shell');
+	var strMoveDir = fso.getParentFolderName(WScript.ScriptFullName);
+	
+	
+	//var newFile; 
+	//var strDate; //日付 yyyymmdd
+	//var strTime; //時刻 hhmiss
+	//var strFolderName; //生成するファイル名
+	//var strMemoName; //引数に指定されたファイル名
+
+	
+	
+	//引数をチェック -- フォルダ名を取得
+	objParm = WScript.arguments;
+	for(i = 0; i < objParm.length; i++){
+		aFile = fso.GetFile(objParm(i));
+		aFile.Name = '2017xxxx ' + aFile.Name;
+		
+		WScript.Echo("あああああああ");
+		WScript.Echo(aFile);
+		fso.MoveFile(aFile, fso.getParentFolderName(WScript.ScriptFullName) + "/");
+	}
+
+</script>
+</job>
+
