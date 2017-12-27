@@ -50,13 +50,31 @@
 	
 	//引数をチェック -- フォルダ名を取得
 	objParm = WScript.arguments;
-	for(i = 0; i < objParm.length; i++){
-		aFile = fso.GetFile(objParm(i));
-		aFile.Name = '2017xxxx ' + aFile.Name;
-		
-		WScript.Echo("あああああああ");
-		WScript.Echo(aFile);
-		fso.MoveFile(aFile, fso.getParentFolderName(WScript.ScriptFullName) + "/");
+	
+	//パラメーターが0のときの処理
+	if(objParm.length == 0){
+		// ショートカットをデスクトップに作る処理ができたらいい。。。
+		WScript.Echo("空");
+	}
+	//パラメーターが指定されているときの処理
+	else{
+		for(i = 0; i < objParm.length; i++){
+			
+			// パラメーターにフォルダが渡された
+			if(fso.FolderExists(objParm(i))){
+				// フォルダを移動
+				WScript.Echo("フォルダ");
+			}
+			
+			// パラメーターにファイルが渡された
+			else if(fso.FileExists(objParm(i))){
+				aFile = fso.GetFile(objParm(i));
+				aFile.Name = '2017xxxx ' + aFile.Name;
+				
+				fso.MoveFile(aFile, fso.getParentFolderName(WScript.ScriptFullName) + "/");
+				WScript.Echo("ファイル");
+			}
+		}
 	}
 
 </script>
