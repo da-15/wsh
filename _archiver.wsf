@@ -36,6 +36,7 @@
 	var i;
 	var objParm;
 	var aFile;
+	var aFolder;
 	var objWShell = new ActiveXObject('WScript.Shell');
 	var strMoveDir = fso.getParentFolderName(WScript.ScriptFullName);
 	
@@ -62,7 +63,11 @@
 			
 			// パラメーターにフォルダが渡された
 			if(fso.FolderExists(objParm(i))){
+				aFolder = fso.GetFolder(objParm(i));
+				aFolder.Name = '2017xxxx ' + aFolder.Name;
+				
 				// フォルダを移動
+				fso.MoveFolder(aFolder, fso.getParentFolderName(WScript.ScriptFullName) + "/");
 				WScript.Echo("フォルダ");
 			}
 			
@@ -76,6 +81,9 @@
 			}
 		}
 	}
+	
+	fso = null;
+	objWShell = null;
 
 </script>
 </job>
