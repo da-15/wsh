@@ -4,9 +4,9 @@
 	//[$date]には、YYYYMMDDにて日付が入ります。
 	//[$time]には、hhmissにて時刻が入ります。
 	//[$name]には、引数で指定されたファイル名が入ります。
-	var strFolderNameFormat = '[$date] [$name]';
+	var strNameFormat = '[$date]_[$name]';
 	
-	//本スクリプトファイルと同様の場所(もしくはショートカット設定項目の"作業フォルダ")に出力したい場合は空のままにする。
+	//本スクリプトファイルと同様の場所に出力したい場合は空のままにする。
 	var strPathCreateFolder = '';
 	
 	//ファイル名として不正な記号（＼/:*?"<>|）が指定された場合に置き換える文字
@@ -39,15 +39,15 @@
 	var aFolder;
 	var objWShell = new ActiveXObject('WScript.Shell');
 	var strMoveDir = fso.getParentFolderName(WScript.ScriptFullName);
+	var strFolderMoveTo;
 	
 	
-	//var newFile; 
-	//var strDate; //日付 yyyymmdd
-	//var strTime; //時刻 hhmiss
-	//var strFolderName; //生成するファイル名
-	//var strMemoName; //引数に指定されたファイル名
-
-	
+	if(strPathCreateFolder == ''){
+		strFolderMoveTo = fso.getParentFolderName(WScript.ScriptFullName) + "/";
+	}
+	else{
+		strFolderMoveTo = strPathCreateFolder;
+	}
 	
 	//引数をチェック -- フォルダ名を取得
 	objParm = WScript.arguments;
@@ -64,19 +64,20 @@
 			// パラメーターにフォルダが渡された
 			if(fso.FolderExists(objParm(i))){
 				aFolder = fso.GetFolder(objParm(i));
-				aFolder.Name = '2017xxxx ' + aFolder.Name;
+				aFolder.Name = setNamePrefix(aFolder.Name);
 				
 				// フォルダを移動
-				fso.MoveFolder(aFolder, fso.getParentFolderName(WScript.ScriptFullName) + "/");
+				fso.MoveFolder(aFolder, strFolderMoveTo);
 				WScript.Echo("フォルダ");
 			}
 			
 			// パラメーターにファイルが渡された
 			else if(fso.FileExists(objParm(i))){
 				aFile = fso.GetFile(objParm(i));
-				aFile.Name = '2017xxxx ' + aFile.Name;
+				aFile.Name = setNamePrefix(aFile.Name);
 				
-				fso.MoveFile(aFile, fso.getParentFolderName(WScript.ScriptFullName) + "/");
+				// ファイルを移動
+				fso.MoveFile(aFile, strFolderMoveTo);
 				WScript.Echo("ファイル");
 			}
 		}
@@ -85,6 +86,67 @@
 	fso = null;
 	objWShell = null;
 
+	function setNamePrefix(strName){
+		var strDate = getFormatedDate(new Date()); //日付を取得yyyymmdd
+		var strTime = getFormatedTime(new Date()); //時刻を取得 hhmiss
+		var strRsltName;
+		
+		//ファイル名を取得
+		strRsltName = strNameFormat;
+		strRsltName = strRsltName.replace('[$date]', strDate);
+		strRsltName = strRsltName.replace('[$time]', strTime);
+		strRsltName = strRsltName.replace('[$name]', strName);
+		
+		//ファイルに不適切な記号を-に置き換え
+		strRsltName = strRsltName.replace(/[\/:*?"<>|]/g, REPLACE_NG_CHAR);
+
+		return strRsltName;
+	}
+	
+	// 日付フォーマット作成用関数 yyyymmdd
+	function getFormatedDate(dtDate){
+		var strDate; //日付文字列
+		
+		strDate = '';
+		strDate += dtDate.getYear(); //年 yyyy
+		strDate += formatString(dtDate.getMonth()+1, 2); //月 mm
+		strDate += formatString(dtDate.getDate(), 2); //日 dd
+		
+		
+		//yyyymmddのフォーマットで日付を返す
+		return strDate;
+	}
+	
+	function getFormatedTime(dtDate){
+		var strTime; //時刻文字列
+		strTime = '';
+		strTime += formatString(dtDate.getHours(), 2); //時 hh
+		strTime += '';
+		strTime += formatString(dtDate.getMinutes(), 2); //分 mi
+		strTime += '';
+		strTime += formatString(dtDate.getSeconds(), 2); //秒 ss
+		
+		//hhmissのフォーマットで時刻を返す
+		return strTime;
+	}
+
+	// 例）
+	// 2→02にする。
+	// numStrLen 返す文字列の長さを指定
+	function formatString(strNum, numStrLen){
+		var strBuf;
+		var i;
+		
+		strBuf = '' + strNum;
+		//元の文字よりも返す文字列の指定のほうが短い場合は何もしない
+		if(strBuf.length < numStrLen){
+			// 数値の前に0を付与
+			for(i=strBuf.length; i < numStrLen; i++){
+				strBuf = '0' + strBuf;
+			}
+		}
+		return strBuf;
+	}
 </script>
 </job>
 
