@@ -3,7 +3,7 @@
 //保管するファイル／フォルダの名前フォーマット
 //[$date]には、YYYYMMDDにて日付が入る
 //[$time]には、hhmissにて時刻が入る
-//[$name]には、元のファイル名が入る。
+//[$name]には、元のファイル名が入る
 var strNameFormat = '[$date]_[$name]';
 
 //保管場所（本スクリプトファイルと同様のパスを保管場所にしたい場合は空のままにする）
@@ -19,4 +19,172 @@ var strNameShortcutFile = '保管庫へ';
 // メッセージ
 var msg = new Array(10);
 msg[0]='セットアップ';
-msg[1]='OKボタンを押すとデスクトップに「' + strNameShortcutFile + '」アイコンを作成します。
+msg[1]='OKボタンを押すとデスクトップに「' + strNameShortcutFile + '」アイコンを作成します。＼nよろしいですか？＼n＼n＼n';
+msg[2]='<使用方法>＼n保管庫にしたいフォルダにこのファイルを配置してください。＼n';
+msg[3]='（↑の準備がまだの場合は、キャンセルを押して準備ができてから再度やり直してください。）＼n＼n';
+msg[4]='下のOKボタンを押すとデスクトップに「' + strNameShortcutFile + '」というアイコンが作成されます。＼n';
+msg[5]='このアイコンにファイルまたはフォルダをドラッグ＆ドロップすることでデータは保管庫に移動されます。（複数データを同時にドラッグも可）＼n＼n';
+msg[6]='移動したデータには名前の先頭に自動で日付が付与されるので、ファイル名順で並べ替えれば日付ごとのデータ管理ができます。';
+msg[7]='「[$folder_name]」は、既に保管庫に存在してます。＼nフォルダ名を変更してください。';
+msg[8]='「[$file_name]」は、既に保管庫に存在してます。＼nファイル名を変更してください。';
+msg[9]='';
+
+
+//--------------------------------------------------
+// メイン処理
+var i;
+var objParm;
+var aFile;
+var aFolder;
+var strFolderMoveTo;
+var fileShortcut;
+var strDataName;
+var fso = new ActiveXObject('Scripting.FileSystemObject');
+var objWShell = new ActiveXObject('WScript.Shell');
+
+
+if(strPathArchiveFolder == ''){
+	strFolderMoveTo = fso.getParentFolderName(WScript.ScriptFullName) + "/";
+}
+else{
+	strFolderMoveTo = strPathArchiveFolder;
+}
+
+//引数をチェック -- フォルダ名を取得
+objParm = WScript.arguments;
+
+//パラメーターが指定されていないときの処理（ファイルダブルクリック時）
+if(objParm.length == 0){
+
+	// 確認ダイアログをだす
+	if(objWShell.Popup(msg[1]+msg[2]+msg[3]+msg[4]+msg[5]+msg[6], 0, msg[0], 1) == 1){
+		// ショートカットをデスクトップに生成する
+		strNameShortcutFile = setProperFileName(strNameShortcutFile, REPLACE_NG_CHAR);
+		fileShortcut = objWShell.CreateShortcut(objWShell.SpecialFolders('Desktop') + '/' + strNameShortcutFile + '.lnk');
+		fileShortcut.TargetPath = 'file:/' + WScript.ScriptFullName;
+		fileShortcut.IconLocation = (objWShell.ExpandEnvironmentStrings("%SystemRoot%") + '/System32/shell32.dll,122');
+		fileShortcut.Save();
+	}
+
+}
+//パラメーターが指定されているときの処理（ドラッグ＆ドロップ時）
+else{
+	for(i = 0; i < objParm.length; i++){
+
+		// パラメーターにフォルダが渡された
+		if(fso.FolderExists(objParm(i))){
+			aFolder = fso.GetFolder(objParm(i));
+			strDataName = setNamePrefix(aFolder.Name);
+
+			// フォルダの存在チェック
+			if(fso.FolderExists(strFolderMoveTo + strDataName)){
+				// 既に存在している
+				WScript.Echo(msg[7].replace('[$folder_name]', strDataName));
+			}
+			else{
+				// フォルダ名をPrefix付きに変更
+				aFolder.Name = strDataName;
+				// フォルダを移動
+				fso.MoveFolder(aFolder, strFolderMoveTo);
+			}
+		}
+
+		// パラメーターにファイルが渡された
+		else if(fso.FileExists(objParm(i))){
+			aFile = fso.GetFile(objParm(i));
+			strDataName = setNamePrefix(aFile.Name);
+
+			// ファイルの存在チェック
+			if(fso.FileExists(strFolderMoveTo + strDataName)){
+				// 既に存在している
+				WScript.Echo(msg[8].replace('[$file_name]', strDataName));
+			}
+			else{
+				// ファイル名をPrefix付きに変更
+				aFile.Name = strDataName;
+				// ファイルを移動
+				fso.MoveFile(aFile, strFolderMoveTo);
+			}
+		}
+	}
+}
+
+fso = null;
+objWShell = null;
+
+// --------------------------------------------------
+// 名前にPrefixを追加する
+function setNamePrefix(strName){
+	var strDate = getFormatedDate(new Date()); //日付を取得yyyymmdd
+	var strTime = getFormatedTime(new Date()); //時刻を取得 hhmiss
+	var strRsltName;
+
+	//ファイル名を取得
+	strRsltName = strNameFormat;
+	strRsltName = strRsltName.replace('[$date]', strDate);
+	strRsltName = strRsltName.replace('[$time]', strTime);
+	strRsltName = strRsltName.replace('[$name]', strName);
+
+	//ファイルに不適切な記号の処理
+	strRsltName = setProperFileName(strRsltName, REPLACE_NG_CHAR);
+
+	return strRsltName;
+}
+
+// --------------------------------------------------
+// 日付フォーマット作成用関数 yyyymmdd
+function getFormatedDate(dtDate){
+	var strDate; //日付文字列
+
+	strDate = '';
+	strDate += dtDate.getYear(); //年 yyyy
+	strDate += formatString(dtDate.getMonth()+1, 2); //月 mm
+	strDate += formatString(dtDate.getDate(), 2); //日 dd
+
+
+	//yyyymmddのフォーマットで日付を返す
+	return strDate;
+}
+
+// --------------------------------------------------
+// 日付フォーマット作成用関数 hhmiss
+function getFormatedTime(dtDate){
+	var strTime; //時刻文字列
+	strTime = '';
+	strTime += formatString(dtDate.getHours(), 2); //時 hh
+	strTime += '';
+	strTime += formatString(dtDate.getMinutes(), 2); //分 mi
+	strTime += '';
+	strTime += formatString(dtDate.getSeconds(), 2); //秒 ss
+
+	//hhmissのフォーマットで時刻を返す
+	return strTime;
+}
+
+// --------------------------------------------------
+// 例）
+// 2→02にする。
+// numStrLen 返す文字列の長さを指定
+function formatString(strNum, numStrLen){
+	var strBuf;
+	var i;
+
+	strBuf = '' + strNum;
+	//元の文字よりも返す文字列の指定のほうが短い場合は何もしない
+	if(strBuf.length < numStrLen){
+		// 数値の前に0を付与
+		for(i=strBuf.length; i < numStrLen; i++){
+			strBuf = '0' + strBuf;
+		}
+	}
+	return strBuf;
+}
+
+// --------------------------------------------------
+// ファイル名として不適切な文字を置き換える
+function setProperFileName(strName, chrReplace){
+	return strName.replace(/[\/:*?"<>|]/g, chrReplace);
+}
+
+</script>
+</job>
