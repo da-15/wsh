@@ -59,7 +59,7 @@ if(objParm.length == 0){
 	WScript.Echo(WScript.ScriptFullName);
 
 	// ショートカットをデスクトップに生成する
-	strNameShortcutFile = setProperFileName(strNameShortcutFile);
+	strNameShortcutFile = setProperFileName(strNameShortcutFile, REPLACE_NG_CHAR);
 	fileShortcut = objWShell.CreateShortcut(objWShell.SpecialFolders('Desktop') + '/' + strNameShortcutFile + '.lnk');
 	fileShortcut.TargetPath = 'file:/' + WScript.ScriptFullName;
 	fileShortcut.Save();
@@ -97,7 +97,7 @@ else{
 fso = null;
 objWShell = null;
 
-
+// 名前にPrefixを追加する
 function setNamePrefix(strName){
 	var strDate = getFormatedDate(new Date()); //日付を取得yyyymmdd
 	var strTime = getFormatedTime(new Date()); //時刻を取得 hhmiss
@@ -110,7 +110,7 @@ function setNamePrefix(strName){
 	strRsltName = strRsltName.replace('[$name]', strName);
 
 	//ファイルに不適切な記号の処理
-	strRsltName = setProperFileName(strRsltName);
+	strRsltName = setProperFileName(strRsltName, REPLACE_NG_CHAR);
 
 	return strRsltName;
 }
@@ -162,8 +162,8 @@ function formatString(strNum, numStrLen){
 }
 
 // ファイル名として不適切な文字を置き換える
-function setProperFileName(strName){
-	return strName.replace(/[\/:*?"<>|]/g, REPLACE_NG_CHAR);
+function setProperFileName(strName, chrReplace){
+	return strName.replace(/[\/:*?"<>|]/g, chrReplace);
 }
 
 </script>
