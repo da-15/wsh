@@ -1,19 +1,19 @@
 <job id="cf_cc">
 <script language="JavaScript">
 	//作成するファイルのフォーマット。
-	//[$date]には、YYYYMMDDにて日付が入ります。
-	//[$time]には、hhmissにて時刻が入ります。
-	//[$name]には、引数で指定されたファイル名が入ります。
+	//[$date]には、YYYYMMDDにて日付が入る
+	//[$time]には、hhmissにて時刻が入る
+	//[$name]には、引数で指定されたファイル名が入る
 	var strNameFormat = '[$date]_[$name]';
 	
-	//本スクリプトファイルと同様の場所に出力したい場合は空のままにする。
-	var strPathCreateFolder = '';
+	//保管場所（本スクリプトファイルと同様のパスを保管場所にしたい場合は空のままにする）
+	var strPathArchiveFolder = '';
 	
 	//ファイル名として不正な記号（＼/:*?"<>|）が指定された場合に置き換える文字
 	var REPLACE_NG_CHAR = '-';
-	
-	//ファイル名が指定されなかった場合の文字列
-	var REPLACE_NO_TITLE = '';
+		
+	//デスクトップに生成するショートカットファイル名
+	var strNameShortcutFile = '_archive';
 	
 	//-----------------------------------------------
 	// メッセージ 
@@ -43,28 +43,28 @@
 	var fileShortcut;
 	
 	
-	if(strPathCreateFolder == ''){
+	if(strPathArchiveFolder == ''){
 		strFolderMoveTo = fso.getParentFolderName(WScript.ScriptFullName) + "/";
 	}
 	else{
-		strFolderMoveTo = strPathCreateFolder;
+		strFolderMoveTo = strPathArchiveFolder;
 	}
 	
 	//引数をチェック -- フォルダ名を取得
 	objParm = WScript.arguments;
 	
-	//パラメーターが0のときの処理
+	//パラメーターが指定されていないときの処理（ファイルダブルクリック時）
 	if(objParm.length == 0){
-		// ショートカットをデスクトップに作る処理ができたらいい。。。
+		// 確認ダイアログをだす
 		WScript.Echo(WScript.ScriptFullName);
 		
-		fileShortcut = objWShell.CreateShortcut(objWShell.SpecialFolders('Desktop') + '/' + '_archive.lnk');
+		// ショートカットをデスクトップに生成する
+		strNameShortcutFile = setProperFileName(strNameShortcutFile);
+		fileShortcut = objWShell.CreateShortcut(objWShell.SpecialFolders('Desktop') + '/' + strNameShortcutFile + '.lnk');
 		fileShortcut.TargetPath = 'file:/' + WScript.ScriptFullName;
-		fileShortcut.Save();
-		
-		
+		fileShortcut.Save();	
 	}
-	//パラメーターが指定されているときの処理
+	//パラメーターが指定されているときの処理（ドラッグ＆ドロップ時）
 	else{
 		for(i = 0; i < objParm.length; i++){
 			
@@ -72,6 +72,8 @@
 			if(fso.FolderExists(objParm(i))){
 				aFolder = fso.GetFolder(objParm(i));
 				aFolder.Name = setNamePrefix(aFolder.Name);
+				
+				//重複チェック
 				
 				// フォルダを移動
 				fso.MoveFolder(aFolder, strFolderMoveTo);
@@ -83,6 +85,8 @@
 				aFile = fso.GetFile(objParm(i));
 				aFile.Name = setNamePrefix(aFile.Name);
 				
+				//重複チェック
+				
 				// ファイルを移動
 				fso.MoveFile(aFile, strFolderMoveTo);
 				WScript.Echo("ファイル");
@@ -92,7 +96,8 @@
 	
 	fso = null;
 	objWShell = null;
-
+	
+	
 	function setNamePrefix(strName){
 		var strDate = getFormatedDate(new Date()); //日付を取得yyyymmdd
 		var strTime = getFormatedTime(new Date()); //時刻を取得 hhmiss
@@ -104,12 +109,12 @@
 		strRsltName = strRsltName.replace('[$time]', strTime);
 		strRsltName = strRsltName.replace('[$name]', strName);
 		
-		//ファイルに不適切な記号を-に置き換え
-		strRsltName = strRsltName.replace(/[\/:*?"<>|]/g, REPLACE_NG_CHAR);
+		//ファイルに不適切な記号の処理
+		strRsltName = setProperFileName(strRsltName);
 
 		return strRsltName;
 	}
-	
+
 	// 日付フォーマット作成用関数 yyyymmdd
 	function getFormatedDate(dtDate){
 		var strDate; //日付文字列
@@ -154,6 +159,12 @@
 		}
 		return strBuf;
 	}
+	
+	// ファイル名として不適切な文字を置き換える
+	function setProperFileName(strName){
+		return strName.replace(/[\/:*?"<>|]/g, REPLACE_NG_CHAR);
+	}
+	
 </script>
 </job>
 
