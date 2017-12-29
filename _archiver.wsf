@@ -11,12 +11,12 @@ var strPathArchiveFolder = '';
 
 //ファイル名として不正な記号（＼/:*?"<>|）が指定された場合に置き換える文字
 var REPLACE_NG_CHAR = '-';
-
+	
 //デスクトップに生成するショートカットファイル名
 var strNameShortcutFile = '_archive';
 
 //-----------------------------------------------
-// メッセージ
+// メッセージ 
 var msg = new Array(10);
 msg[0]='ファイルが既に存在しています。＼n既存のフォルダを開きます。＼n＼nファイル名[[$file_name]]';
 msg[1]='テキストエディタのオープンに失敗しました。＼n＼nファイル名[[$editor_name]]';
@@ -30,10 +30,9 @@ msg[8]='';
 msg[9]='';
 
 
-
 //--------------------------------------------------
-// メイン処理a
-var fso = new ActiveXObject('Scripting.FileSystemObject');
+// メイン処理
+var fso = new ActiveXObject('Scripting.FileSystemObject'); 
 var i;
 var objParm;
 var aFile;
@@ -58,36 +57,36 @@ objParm = WScript.arguments;
 if(objParm.length == 0){
 	// 確認ダイアログをだす
 	WScript.Echo(WScript.ScriptFullName);
-
+	
 	// ショートカットをデスクトップに生成する
 	strNameShortcutFile = setProperFileName(strNameShortcutFile);
 	fileShortcut = objWShell.CreateShortcut(objWShell.SpecialFolders('Desktop') + '/' + strNameShortcutFile + '.lnk');
 	fileShortcut.TargetPath = 'file:/' + WScript.ScriptFullName;
-	fileShortcut.Save();
+	fileShortcut.Save();	
 }
 //パラメーターが指定されているときの処理（ドラッグ＆ドロップ時）
 else{
 	for(i = 0; i < objParm.length; i++){
-
+		
 		// パラメーターにフォルダが渡された
 		if(fso.FolderExists(objParm(i))){
 			aFolder = fso.GetFolder(objParm(i));
 			aFolder.Name = setNamePrefix(aFolder.Name);
-
+			
 			//重複チェック
-
+			
 			// フォルダを移動
 			fso.MoveFolder(aFolder, strFolderMoveTo);
 			WScript.Echo("フォルダ");
 		}
-
+		
 		// パラメーターにファイルが渡された
 		else if(fso.FileExists(objParm(i))){
 			aFile = fso.GetFile(objParm(i));
 			aFile.Name = setNamePrefix(aFile.Name);
-
+			
 			//重複チェック
-
+			
 			// ファイルを移動
 			fso.MoveFile(aFile, strFolderMoveTo);
 			WScript.Echo("ファイル");
@@ -103,13 +102,13 @@ function setNamePrefix(strName){
 	var strDate = getFormatedDate(new Date()); //日付を取得yyyymmdd
 	var strTime = getFormatedTime(new Date()); //時刻を取得 hhmiss
 	var strRsltName;
-
+	
 	//ファイル名を取得
 	strRsltName = strNameFormat;
 	strRsltName = strRsltName.replace('[$date]', strDate);
 	strRsltName = strRsltName.replace('[$time]', strTime);
 	strRsltName = strRsltName.replace('[$name]', strName);
-
+	
 	//ファイルに不適切な記号の処理
 	strRsltName = setProperFileName(strRsltName);
 
@@ -119,13 +118,13 @@ function setNamePrefix(strName){
 // 日付フォーマット作成用関数 yyyymmdd
 function getFormatedDate(dtDate){
 	var strDate; //日付文字列
-
+	
 	strDate = '';
 	strDate += dtDate.getYear(); //年 yyyy
 	strDate += formatString(dtDate.getMonth()+1, 2); //月 mm
 	strDate += formatString(dtDate.getDate(), 2); //日 dd
-
-
+	
+	
 	//yyyymmddのフォーマットで日付を返す
 	return strDate;
 }
@@ -138,7 +137,7 @@ function getFormatedTime(dtDate){
 	strTime += formatString(dtDate.getMinutes(), 2); //分 mi
 	strTime += '';
 	strTime += formatString(dtDate.getSeconds(), 2); //秒 ss
-
+	
 	//hhmissのフォーマットで時刻を返す
 	return strTime;
 }
@@ -149,7 +148,7 @@ function getFormatedTime(dtDate){
 function formatString(strNum, numStrLen){
 	var strBuf;
 	var i;
-
+	
 	strBuf = '' + strNum;
 	//元の文字よりも返す文字列の指定のほうが短い場合は何もしない
 	if(strBuf.length < numStrLen){
