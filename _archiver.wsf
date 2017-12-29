@@ -1,6 +1,6 @@
 <job id="dk_tool">
 <script language="JavaScript">
-//作成するファイルのフォーマット。
+//保管するファイル／フォルダの名前フォーマット。
 //[$date]には、YYYYMMDDにて日付が入る
 //[$time]には、hhmissにて時刻が入る
 //[$name]には、引数で指定されたファイル名が入る
