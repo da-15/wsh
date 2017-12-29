@@ -40,6 +40,7 @@
 	var objWShell = new ActiveXObject('WScript.Shell');
 	var strMoveDir = fso.getParentFolderName(WScript.ScriptFullName);
 	var strFolderMoveTo;
+	var fileShortcut;
 	
 	
 	if(strPathCreateFolder == ''){
@@ -55,7 +56,13 @@
 	//パラメーターが0のときの処理
 	if(objParm.length == 0){
 		// ショートカットをデスクトップに作る処理ができたらいい。。。
-		WScript.Echo("空");
+		WScript.Echo(WScript.ScriptFullName);
+		
+		fileShortcut = objWShell.CreateShortcut(objWShell.SpecialFolders('Desktop') + '/' + '_archive.lnk');
+		fileShortcut.TargetPath = 'file:/' + WScript.ScriptFullName;
+		fileShortcut.Save();
+		
+		
 	}
 	//パラメーターが指定されているときの処理
 	else{
